@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="عقارات">
+<meta name="theme-color" content="#0d1b2a">
+<title>نظام العقارات</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#0d1b2a;color:#e2eaf4;font-family:'Cairo',sans-serif;direction:rtl}
+body{display:flex;flex-direction:column;min-height:100vh;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+
+/* header */
+.hdr{background:#0d1b2a;padding:18px 20px 14px;border-bottom:1px solid #1a2e42;text-align:center;flex-shrink:0}
+.hdr-logo{font-size:28px;margin-bottom:2px}
+.hdr-title{font-size:20px;font-weight:900;background:linear-gradient(90deg,#38bdf8,#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hdr-sub{font-size:12px;color:#4a7a9b;margin-top:2px}
+
+/* main scroll area */
+.main{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px}
+
+/* card */
+.card{background:#111f2e;border:1px solid #1a2e42;border-radius:16px;overflow:hidden}
+.card-hd{padding:12px 16px;background:#0f1c2a;border-bottom:1px solid #1a2e42;display:flex;align-items:center;gap:10px}
+.card-icon{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.card-title{font-size:14px;font-weight:700;color:#e2eaf4}
+.card-sub{font-size:11px;color:#4a7a9b;margin-top:1px}
+.card-body{padding:14px}
+
+/* textarea */
+textarea{width:100%;background:#0a1520;border:1.5px solid #1a2e42;border-radius:12px;color:#e2eaf4;font-family:'Cairo',sans-serif;font-size:15px;line-height:1.7;padding:12px 14px;resize:none;direction:rtl;outline:none;transition:border-color .2s;-webkit-appearance:none}
+textarea:focus{border-color:#38bdf8;box-shadow:0 0 0 3px rgba(56,189,248,.1)}
+textarea::placeholder{color:#2e4a62}
+
+/* example chips */
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px}
+.chip{background:#0f2030;border:1px solid #1e3a52;border-radius:20px;padding:5px 13px;font-size:12px;color:#38bdf8;font-family:'Cairo',sans-serif;cursor:pointer;transition:all .15s;white-space:nowrap}
+.chip:active{background:#1a3448;transform:scale(.97)}
+
+/* char counter */
+.char-row{display:flex;justify-content:space-between;align-items:center;margin-top:7px}
+.char-count{font-size:11px;color:#2e4a62;font-family:monospace}
+
+/* submit */
+.btn-submit{width:100%;padding:15px;margin-top:12px;background:linear-gradient(135deg,#0ea5e9,#10b981);border:none;border-radius:12px;color:#fff;font-family:'Cairo',sans-serif;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .2s,transform .1s;-webkit-appearance:none}
+.btn-submit:active{opacity:.85;transform:scale(.98)}
+
+/* step indicator */
+.steps{display:flex;align-items:center;gap:0;direction:ltr;margin-bottom:4px}
+.stp{display:flex;align-items:center;flex:1}
+.stp-dot{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;font-family:monospace;transition:all .3s}
+.stp-dot.done{background:#10b981;color:#0d1b2a}
+.stp-dot.active{background:#0ea5e9;color:#fff}
+.stp-dot.idle{background:#111f2e;color:#2e4a62;border:1px solid #1a2e42}
+.stp-line{flex:1;height:1px;background:#1a2e42;transition:background .3s}
+.stp-line.done{background:#10b981}
+.stp-labels{display:flex;justify-content:space-between;direction:ltr;margin-top:5px}
+.stp-lbl{font-size:10px;color:#2e4a62;text-align:center;width:24px}
+.stp-lbl.active{color:#38bdf8}
+.stp-lbl.done{color:#34d399}
+
+/* status */
+.status{display:none;align-items:center;gap:9px;padding:11px 14px;border-radius:10px;font-size:13px;margin-top:10px}
+.status.show{display:flex}
+.status.loading{background:rgba(14,165,233,.1);border:1px solid rgba(14,165,233,.2);color:#38bdf8}
+.status.success{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);color:#34d399}
+.status.error{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:#f87171}
+.spin{width:15px;height:15px;border:2px solid rgba(56,189,248,.25);border-top-color:#38bdf8;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* result preview */
+.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.result-field{background:#0a1520;border:1px solid #1a2e42;border-radius:10px;padding:9px 11px}
+.result-field.filled{border-color:rgba(16,185,129,.3)}
+.rf-label{font-size:10px;color:#2e4a62;margin-bottom:3px;font-family:monospace}
+.rf-value{font-size:13px;font-weight:600;color:#e2eaf4;direction:rtl}
+.rf-value.num{color:#38bdf8;font-family:monospace}
+.badge{display:inline-block;padding:2px 10px;border-radius:10px;font-size:12px;font-weight:700}
+.badge-sale{background:rgba(56,189,248,.15);color:#38bdf8;border:1px solid rgba(56,189,248,.25)}
+.badge-rent{background:rgba(245,158,11,.15);color:#fbbf24;border:1px solid rgba(245,158,11,.25)}
+
+/* social post */
+.social-box{background:#0a1520;border:1px solid #1a2e42;border-radius:10px;padding:12px;font-size:13px;line-height:1.8;white-space:pre-wrap;direction:rtl;color:#e2eaf4;margin-top:4px}
+.btn-copy{background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.2);border-radius:8px;padding:5px 12px;color:#38bdf8;font-size:12px;cursor:pointer;font-family:'Cairo',sans-serif}
+.btn-copy:active{background:rgba(56,189,248,.2)}
+
+/* history */
+.hist-row{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid #1a2e42;font-size:13px}
+.hist-row:last-child{border-bottom:none}
+.hist-info{flex:1;min-width:0}
+.hist-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#e2eaf4;font-size:13px}
+.hist-meta{font-size:10px;color:#2e4a62;margin-top:1px;font-family:monospace}
+.hist-price{color:#34d399;font-family:monospace;font-size:12px;white-space:nowrap;font-weight:700}
+.empty{text-align:center;padding:28px;color:#2e4a62;font-size:13px}
+.empty-icon{font-size:30px;margin-bottom:8px}
+
+/* instructions panel */
+.inst-row{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid #1a2e42}
+.inst-row:last-child{border-bottom:none}
+.inst-num{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#0ea5e9,#10b981);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;font-family:monospace}
+.inst-text{font-size:13px;color:#8ab4d4;line-height:1.6;direction:rtl}
+.inst-text strong{color:#e2eaf4;font-weight:700}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-logo">🏠</div>
+  <div class="hdr-title">نظام إدارة العقارات</div>
+  <div class="hdr-sub">Real Estate CRM — Text to Google Sheets</div>
+</div>
+
+<div class="main">
+
+  <!-- Steps -->
+  <div class="card">
+    <div class="card-body" style="padding:14px 16px">
+      <div class="steps" id="steps">
+        <div class="stp"><div class="stp-dot active" id="d1">1</div><div class="stp-line" id="l1"></div></div>
+        <div class="stp"><div class="stp-dot idle" id="d2">2</div><div class="stp-line" id="l2"></div></div>
+        <div class="stp"><div class="stp-dot idle" id="d3">3</div><div class="stp-line" id="l3"></div></div>
+        <div class="stp"><div class="stp-dot idle" id="d4">4</div></div>
+      </div>
+      <div class="stp-labels">
+        <span class="stp-lbl active" id="sl1">إدخال</span>
+        <span class="stp-lbl" id="sl2">استخراج</span>
+        <span class="stp-lbl" id="sl3">منشور</span>
+        <span class="stp-lbl" id="sl4">حفظ</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Input -->
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-icon" style="background:rgba(56,189,248,.12)">✍️</div>
+      <div>
+        <div class="card-title">وصف العقار</div>
+        <div class="card-sub">اكتب بالعربي أو الإنجليزي</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <textarea id="propText" rows="5"
+        placeholder="مثال: بيت للبيع في حي اليرموك بالموصل، مساحة 250 متر، السعر 180 مليون دينار، أربع غرف نوم، ثلاثة حمامات، رقم المالك 07701234567"></textarea>
+
+      <div class="char-row">
+        <div class="chips">
+          <button class="chip" onclick="fillEx('ar1')">🏠 بيت بيع</button>
+          <button class="chip" onclick="fillEx('ar2')">🏢 شقة إيجار</button>
+          <button class="chip" onclick="fillEx('ar3')">🌍 أرض</button>
+          <button class="chip" onclick="fillEx('en1')">🇬🇧 English</button>
+        </div>
+        <span class="char-count" id="charCount">0</span>
+      </div>
+
+      <button class="btn-submit" id="submitBtn" onclick="submitListing()">
+        <span id="btnIcon">⚡</span>
+        <span id="btnText">استخراج وحفظ في Google Sheets</span>
+      </button>
+
+      <div class="status" id="statusBar">
+        <div class="spin" id="statusSpin" style="display:none"></div>
+        <span id="statusMsg"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Result preview (hidden until data arrives) -->
+  <div class="card" id="resultCard" style="display:none">
+    <div class="card-hd">
+      <div class="card-icon" style="background:rgba(16,185,129,.12)">📊</div>
+      <div>
+        <div class="card-title">البيانات المستخرجة</div>
+        <div class="card-sub">Extracted by Claude AI</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="result-grid" id="resultGrid"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:13px;font-weight:700;color:#8ab4d4">📱 منشور السوشيال ميديا</span>
+        <button class="btn-copy" id="copyBtn" onclick="copySocial()">نسخ</button>
+      </div>
+      <div class="social-box" id="socialBox"></div>
+    </div>
+  </div>
+
+  <!-- History -->
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-icon" style="background:rgba(139,92,246,.12)">📋</div>
+      <div>
+        <div class="card-title">العقارات المضافة</div>
+        <div class="card-sub" id="histCount">هذه الجلسة</div>
+      </div>
+    </div>
+    <div id="histList">
+      <div class="empty"><div class="empty-icon">🏘️</div><div>لا توجد عقارات بعد</div></div>
+    </div>
+  </div>
+
+  <!-- How to use -->
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-icon" style="background:rgba(245,158,11,.12)">💡</div>
+      <div>
+        <div class="card-title">كيفية الاستخدام</div>
+        <div class="card-sub">How to use</div>
+      </div>
+    </div>
+    <div class="card-body" style="padding:10px 16px">
+      <div class="inst-row">
+        <div class="inst-num">1</div>
+        <div class="inst-text">اكتب أو الصق وصف العقار في المربع أعلاه بالعربي أو الإنجليزي</div>
+      </div>
+      <div class="inst-row">
+        <div class="inst-num">2</div>
+        <div class="inst-text">اضغط <strong>استخراج وحفظ</strong> — سيفتح Claude تلقائياً مع النص جاهزاً</div>
+      </div>
+      <div class="inst-row">
+        <div class="inst-num">3</div>
+        <div class="inst-text">في Claude، سيتم استخراج جميع البيانات وحفظها في <strong>Google Sheets</strong> تلقائياً</div>
+      </div>
+      <div class="inst-row">
+        <div class="inst-num">4</div>
+        <div class="inst-text">ارجع لهذه الصفحة لإدخال عقار جديد — الصفحة تبقى على الشاشة الرئيسية دائماً</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const SHEET_ID = '1AjMOHmGzeY_2uxo6hYQBAkfZcPmFBGpn_e8ZH5VAXMI';
+const CLAUDE_URL = 'https://claude.ai/new';
+
+const EX = {
+  ar1:'بيت للبيع في حي اليرموك بالموصل، مساحة 250 متر مربع، السعر 180 مليون دينار عراقي، أربع غرف نوم، ثلاثة حمامات، الطابق أرضي، اسم المالك أحمد محمد، رقم المالك 07701234567، ملاحظات: موقع ممتاز',
+  ar2:'شقة للإيجار في حي الدواسة بالموصل، الطابق الثالث، مساحة 120 متر، الإيجار 500 ألف دينار شهرياً، ثلاث غرف نوم، حمامان، مفروشة بالكامل، اسم المالك سارة علي، هاتف 07709876543',
+  ar3:'أرض للبيع في منطقة النور بالموصل، المساحة 500 متر مربع، السعر 95 مليون دينار، جميع الخدمات متوفرة، صالحة للبناء السكني، رقم المالك 07715551234',
+  en1:'House for sale in Yarmouk district, Mosul. 250 sqm, price 180 million Iraqi Dinars. 4 bedrooms, 3 bathrooms, ground floor. Owner Ahmed Mohammed, phone 07701234567. Excellent location near schools.'
+};
+
+const history = JSON.parse(localStorage.getItem('re_hist')||'[]');
+let socialText = '';
+
+document.getElementById('propText').addEventListener('input', function(){
+  document.getElementById('charCount').textContent = this.value.length;
+});
+
+function fillEx(k){ 
+  const t = document.getElementById('propText');
+  t.value = EX[k]; 
+  t.dispatchEvent(new Event('input'));
+  t.focus();
+}
+
+function setStep(n){
+  for(let i=1;i<=4;i++){
+    const d=document.getElementById('d'+i);
+    const sl=document.getElementById('sl'+i);
+    if(i<n){d.className='stp-dot done';d.textContent='✓';sl.className='stp-lbl done';}
+    else if(i===n){d.className='stp-dot active';d.textContent=i;sl.className='stp-lbl active';}
+    else{d.className='stp-dot idle';d.textContent=i;sl.className='stp-lbl';}
+    if(i<4){
+      const l=document.getElementById('l'+i);
+      l.className='stp-line'+(i<n?' done':'');
+    }
+  }
+}
+
+function showStatus(type, msg, spin=false){
+  const bar=document.getElementById('statusBar');
+  bar.className='status show '+type;
+  document.getElementById('statusMsg').textContent=msg;
+  document.getElementById('statusSpin').style.display=spin?'block':'none';
+}
+
+function submitListing(){
+  const text = document.getElementById('propText').value.trim();
+  if(!text){ showStatus('error','الرجاء كتابة وصف العقار أولاً'); return; }
+
+  setStep(2);
+  showStatus('loading','جاري فتح Claude لمعالجة العقار...',true);
+
+  const prompt = `أنت مساعد عقاري. استخرج بيانات العقار التالي وأضفه إلى Google Sheets.
+
+معرّف الجدول: ${SHEET_ID}
+اسم الورقة: 📋 Listings
+
+المطلوب:
+1. استخرج جميع الحقول (نوع المعاملة، نوع العقار، المدينة، الحي، السعر، المساحة، غرف النوم، الحمامات، اسم المالك، هاتف المالك، الملاحظات)
+2. أضف صف جديد في Google Sheets بالترتيب الصحيح للأعمدة A إلى Y
+3. أنشئ منشور سوشيال ميديا احترافي بالعربي للعقار مع الإيموجي المناسب
+4. أكد الحفظ الناجح
+
+وصف العقار:
+${text}`;
+
+  const encoded = encodeURIComponent(prompt);
+  const claudeLink = `https://claude.ai/new?q=${encoded}`;
+
+  setTimeout(()=>{
+    window.open(claudeLink, '_blank');
+    setStep(3);
+    showStatus('success','✅ تم فتح Claude — أكمل العملية هناك وارجع لإدخال عقار جديد');
+    document.getElementById('submitBtn').disabled = false;
+    document.getElementById('btnText').textContent = 'استخراج وحفظ في Google Sheets';
+
+    const entry = {
+      text: text.slice(0,60)+'...',
+      time: new Date().toLocaleTimeString('ar',{hour:'2-digit',minute:'2-digit'}),
+      id: 'RE-'+ String(history.length+1).padStart(3,'0')
+    };
+    history.unshift(entry);
+    localStorage.setItem('re_hist', JSON.stringify(history.slice(0,20)));
+    renderHistory();
+    setStep(4);
+
+    setTimeout(()=>{ 
+      document.getElementById('propText').value='';
+      document.getElementById('charCount').textContent='0';
+      setStep(1);
+    }, 4000);
+  }, 800);
+}
+
+function renderHistory(){
+  const el=document.getElementById('histList');
+  const cnt=document.getElementById('histCount');
+  cnt.textContent = history.length + ' عقار مضاف هذا الجهاز';
+  if(!history.length){
+    el.innerHTML='<div class="empty"><div class="empty-icon">🏘️</div><div>لا توجد عقارات بعد</div></div>';
+    return;
+  }
+  el.innerHTML = history.map(h=>`
+    <div class="hist-row">
+      <div style="font-size:20px;flex-shrink:0">🏠</div>
+      <div class="hist-info">
+        <div class="hist-name">${h.text}</div>
+        <div class="hist-meta">${h.id} · ${h.time}</div>
+      </div>
+    </div>`).join('');
+}
+
+function copySocial(){
+  navigator.clipboard.writeText(socialText).then(()=>{
+    const b=document.getElementById('copyBtn');
+    b.textContent='✓ تم';
+    setTimeout(()=>b.textContent='نسخ',2000);
+  });
+}
+
+renderHistory();
+</script>
+</body>
+</html>
